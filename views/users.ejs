@@ -1,0 +1,270 @@
+<%- include('./layouts/header.ejs')%>
+
+<div class="main">
+  <%- include('./layouts/navbar.ejs')%>
+  <div class="container-fluid">
+    <div class="page-title">
+      <h1>用户</h1>
+    </div>
+    <!-- 有错误信息时展示 -->
+    <!-- <div class="alert alert-danger">
+        <strong>错误！</strong>发生XXX错误
+      </div> -->
+    <div class="row">
+      <div class="col-md-4">
+        <form class="myForm">
+          <h2>添加新用户</h2>
+          <div class="form-group">
+            <label for="email">邮箱</label>
+            <input id="email" class="form-control" name="email" type="email" placeholder="邮箱">
+          </div>
+          <div class="form-group">
+            <label for="slug">别名</label>
+            <input id="slug" class="form-control" name="slug" type="text" placeholder="slug">
+            <p class="help-block">https://zce.me/author/<strong>slug</strong></p>
+          </div>
+          <div class="form-group">
+            <label for="nickname">昵称</label>
+            <input id="nickname" class="form-control" name="nickname" type="text" placeholder="昵称">
+          </div>
+          <div class="form-group">
+            <label for="password">密码</label>
+            <input id="password" class="form-control" name="password" type="text" placeholder="密码">
+          </div>
+          <div class="form-group">
+            <button class="btn btn-primary" type="submit">添加</button>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-8">
+        <div class="page-action">
+          <!-- show when multiple checked -->
+          <a class="btn btn-danger btn-sm" href="javascript:;" style="display: none" id="delMore">批量删除</a>
+        </div>
+        <table class="table table-striped table-bordered table-hover">
+          <thead>
+            <tr>
+              <th class="text-center" width="40"><input type="checkbox" id="chkALL"></th>
+              <th class="text-center" width="80">头像</th>
+              <th>邮箱</th>
+              <th>别名</th>
+              <th>昵称</th>
+              <th>状态</th>
+              <th class="text-center" width="100">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<%- include('./layouts/aside.ejs')%>
+
+<%- include('./layouts/footer.ejs')%>
+
+<!-- 查找数据模板 -->
+<script type="text/template" id="userlistTMP">
+  {{each data}}
+  <tr>
+    <td class="text-center"><input type="checkbox" class='chk' data-id='{{$value.id}}'></td>
+    <td class="text-center"><img class="avatar" src="{{$value.avatar}}"></td>
+    <td>{{$value.email}}</td>
+    <td>{{$value.slug}}</td>
+    <td>{{$value.nickname}}</td>
+    {{ if $value.status=="activated"}}
+    <td>激活</td>
+    {{ else if $value.status=="unactivated"}}
+    <td>未激活</td>
+    {{ else if $value.status=="forbidden"}}
+    <td>禁用</td>
+    {{ else }}
+    <td>废弃</td>
+    {{/if}}
+    <td class="text-center">
+      <a href="javascript:;" class="btn btn-default btn-xs editBtn" data-id='{{$value.id}}'>编辑</a>
+      <a href="javascript:;" class="btn btn-danger btn-xs delBtn" data-id='{{$value.id}}'>删除</a>
+    </td>
+  </tr>
+  {{/each}}
+</script>
+
+<!-- 编辑数据模板 -->
+<script type="text/template" id="edituserTMP">
+  <h2>添加新用户</h2>
+  <input type="hidden" name="id" value="{{id}}" >
+  <div class="form-group">
+    <label for="email">邮箱</label>
+    <input id="email" class="form-control" name="email" type="email" placeholder="邮箱" value="{{email}}">
+  </div>
+  <div class="form-group">
+    <label for="slug">别名</label>
+    <input id="slug" class="form-control" name="slug" type="text" placeholder="slug" value="{{slug}}">
+    <p class="help-block">https://zce.me/author/<strong>slug</strong></p>
+  </div>
+  <div class="form-group">
+    <label for="nickname">昵称</label>
+    <input id="nickname" class="form-control" name="nickname" type="text" placeholder="昵称" value="{{nickname}}">
+  </div>
+  <div class="form-group">
+    <button class="btn btn-primary" type="submit">保存修改</button>
+  </div>
+</script>
+
+<!-- 返回原来模板 -->
+<script type="text/template" id="comebackTMP">
+  <h2>添加新用户</h2>
+  <div class="form-group">
+    <label for="email">邮箱</label>
+    <input id="email" class="form-control" name="email" type="email" placeholder="邮箱">
+  </div>
+  <div class="form-group">
+    <label for="slug">别名</label>
+    <input id="slug" class="form-control" name="slug" type="text" placeholder="slug">
+    <p class="help-block">https://zce.me/author/<strong>slug</strong></p>
+  </div>
+  <div class="form-group">
+    <label for="nickname">昵称</label>
+    <input id="nickname" class="form-control" name="nickname" type="text" placeholder="昵称">
+  </div>
+  <div class="form-group">
+    <label for="password">密码</label>
+    <input id="password" class="form-control" name="password" type="text" placeholder="密码">
+  </div>
+  <div class="form-group">
+    <button class="btn btn-primary" type="submit">添加</button>
+  </div>
+</script>
+
+
+<script>
+  //查看数据ajax请求
+  render()
+  function render() {
+    $.ajax({
+      type: 'get',
+      url: '/userData',
+      dataType: 'json',
+      success: function (res) {
+        if (res.code == 0) {
+          var htmlStr = template('userlistTMP', res)
+          $('tbody').html(htmlStr)
+        }
+      }
+    })
+
+  }
+
+  //添加数据ajax请求
+  $('form').on('submit', function (e) {
+    e.preventDefault()
+    $.ajax({
+      type: 'post',
+      url: '/addUser',
+      data: $(this).serialize(),
+      dataType: 'json',
+      success: function (res) {
+        if (res.code == 0) {
+          render()
+          $('input[name]').val('')
+        }
+      }
+    })
+  })
+
+
+  //删除数据ajax请求
+  $('tbody').on('click', '.delBtn', function () {
+    $.ajax({
+      type: 'get',
+      url: '/delUser',
+      data: {
+        id: $(this).data('id')
+      },
+      dataType: 'json',
+      success: function (res) {
+        if (res.code == 0) {
+          render()
+        }
+      }
+    })
+  })
+
+
+  //更改获得数据ajax请求
+  $('tbody').on('click', '.editBtn', function () {
+    $.ajax({
+      type: 'get',
+      url: '/editData',
+      data: {
+        id: $(this).data('id')
+      },
+      dataType: 'json',
+      success: function (res) {
+        if (res.code == 0) {
+          var htmlStr = template('edituserTMP', res.data)
+          $('.myForm').html(htmlStr)
+        }
+      }
+    })
+  })
+
+
+  //更改提交数据ajax请求
+  $('.myForm').on('submit', function (e) {
+    e.preventDefault()
+    $.ajax({
+      type: 'post',
+      url: '/editUser',
+      data: $('.myForm').serialize(),
+      dataType: 'json',
+      success: function (res) {
+        if (res.code == 0) {
+          render()
+          var htmlStr = template('comebackTMP', {})
+          $('.myForm').html(htmlStr)
+        }
+      }
+    })
+  })
+
+
+  //批量删除按钮事件
+  $('#chkALL').on('click', function () {
+    var isChecked = $('#chkALL').prop('checked')
+    $('tbody .chk').prop('checked', isChecked)
+    isChecked ? $('#delMore').slideDown() : $('#delMore').slideUp() //三元表达式
+  })
+
+  $('tbody').on('click', '.chk', function () {
+    var count = $('tbody .chk').size()
+    var size = $('tbody .chk:checked').size()
+    size >= 2 ? $('#delMore').slideDown() : $('#delMore').slideUp()
+    count == size ? $('#chkALL').prop('checked', true) : $('#chkALL').prop('checked', false)
+  })
+
+  //批量删除数据发送ajax请求
+  $('#delMore').on('click',function(){
+    var ids = []
+    $('tbody .chk:checked').each(function(index,item){
+       ids.push($(item).data('id'))
+    })
+    $.ajax({
+      type:'get',
+      url:'/delDataUsers',
+      data:{
+        id:ids
+      },
+      dataType:'json',
+      success:function(res){
+        if(res.code==0){
+          render()
+        }
+      }
+    })
+  })
+</script>
